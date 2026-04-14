@@ -14,3 +14,4 @@ class UserInDB(BaseModel):
 class TokenData(BaseModel):
     email: str | None = None
     isAdmin: bool = False
+    name: str = ""

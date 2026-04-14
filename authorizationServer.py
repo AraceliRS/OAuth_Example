@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from models import UserLogin, UserInDB
-from auth import verify_password, create_token
+from auth import verifyPassword, createToken
 
 router = APIRouter(prefix="/oauth")
 
@@ -9,32 +9,29 @@ def getDb():
     return db
 
 
-#Valida credenciales y libera token
-#Nuestro proveedor
 @router.post("/token")
 def sendToken(body: UserLogin):
 
     db = getDb()
     user = db.get(body.email)
 
-    if not user or not verify_password(body.password, user.hashed_password):
+    if not user or not verifyPassword(body.password, user.hashedPwd):
         raise HTTPException(
             status_code=401,
             detail="Credenciales incorrectas",
-            headers={"WWW-Authenticate": "Bearer"},  # Header estándar OAuth
+            headers={"WWW-Authenticate": "Bearer"},
         )
     
-    # El token incluye scope para simular permisos OAuth
-    token = create_token({
-        "sub": user.id,
-        "is_admin": user.is_admin,
-        "scope": "admin" if user.is_admin else "user",
+    token = createToken({
+        "sub": user.email,
+        "isAdmin": user.isAdmin,
+        "name": user.name,
+        "scope": "admin" if user.isAdmin else "user",
     })
 
-    # Respuesta estándar OAuth 2.0
     return {
         "access_token": token,
         "token_type": "bearer",
-        "expires_in": 1800,  # 30 min
-        "scope": "admin" if user.is_admin else "user",
+        "expires_in": 1800,
+        "scope": "admin" if user.isAdmin else "user",
     }

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from auth import verify_token
+from auth import verifyToken
 from models import TokenData
 
 
@@ -11,11 +11,10 @@ def getDb():
 router = APIRouter(prefix="/resource")
 header = HTTPBearer()
 
-#Valida el JWT
 def getCurrentUser(
     credentials: HTTPAuthorizationCredentials = Depends(header),
 ) -> TokenData:
-    token_data = verify_token(credentials.credentials)
+    token_data = verifyToken(credentials.credentials)
     if not token_data:
         raise HTTPException(
             status_code=401,
@@ -25,12 +24,12 @@ def getCurrentUser(
     return token_data
 
 
-#Valida el scope
-
 def requireScope(scope: str):
-    current = getCurrentUser()
-    if scope == "admin" and not current.isAdmin:
+    def checker(current: TokenData = Depends(getCurrentUser)):
+        if scope == "admin" and not current.isAdmin:
             raise HTTPException(status_code=403, detail="Scope insuficiente")
+        return current
+    return checker
 
 @router.get("/greeting")
 def get_my_resource(currentUser: TokenData = Depends(getCurrentUser)):

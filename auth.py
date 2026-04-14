@@ -33,9 +33,10 @@ def verifyToken(token: str) -> TokenData | None:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         email: str = payload.get("sub")
         is_admin: bool = payload.get("isAdmin", False)
+        name: str = payload.get("name", "")
         if email is None:
             return None
-        return TokenData(email=email, is_admin=is_admin)
+        return TokenData(email=email, isAdmin=is_admin, name=name)
     except InvalidTokenError:
         return None
     
